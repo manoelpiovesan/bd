@@ -4,3 +4,25 @@ dist
 .vscode
 .DS_Store
 .env
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+/dist
+
+# testing
+/coverage
+
+# Environment variables
+.env.development
+.env.production
+.env.local
+
+# Optional files
+.vscode/
