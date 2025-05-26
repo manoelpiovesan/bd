@@ -1,0 +1,40 @@
+services:
+  ###################
+  #  MySQL Service  #
+  ###################
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: manoel
+      MYSQL_PASSWORD: manoel
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  ###################
+  #  Node.js API    #
+  ###################
+#  api:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: node-api-container
+#    ports:
+#      - "3000:3000"
+#    environment:
+#      DB_HOST: mysql
+#      DB_USER: root
+#      DB_PASSWORD: root
+#      DB_NAME: testdb
+#    depends_on:
+#      - mysql
+#    volumes:
+#      - .:/usr/src/app
+
+volumes:
+  mysql-data:
+
