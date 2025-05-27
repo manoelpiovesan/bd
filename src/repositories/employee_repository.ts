@@ -15,14 +15,18 @@ export class EmployeeRepository {
      */
     async findAll(term: string): Promise<any[]> {
         const query = term
-            ? 'SELECT e.id as employee_id, e.name as employee_name, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id  WHERE e.name LIKE ? ORDER BY e.name ASC'
-            : 'SELECT e.id as employee_id, e.name as employee_name, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id ORDER BY e.name ASC';
+            ? 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id  WHERE e.name LIKE ? ORDER BY e.name ASC'
+            : 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id ORDER BY e.name ASC';
+
         const params = term ? [`%${term}%`] : [];
         const [rows] = await pool.query(query, params);
-        // Monta o objeto Employee conforme solicitado
+
         return (rows as any[]).map(row => ({
             id: row.employee_id,
             name: row.employee_name,
+            salary: row.employee_salary,
+            admissionDate: row.admission_date,
+            dismissalDate: row.dismissal_date,
             department: row.department_id ? {
                 id: row.department_id,
                 name: row.department_name
@@ -40,8 +44,10 @@ export class EmployeeRepository {
             'SELECT e.id as employee_id, e.name as employee_name, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id WHERE e.id = ?',
             [id]
         );
+
         const row = (rows as any[])[0];
         if (!row) return null;
+
         return {
             id: row.employee_id,
             name: row.employee_name,
@@ -56,16 +62,20 @@ export class EmployeeRepository {
     /**
      * Cria um novo funcionário
      * @param name - Employee name
+     * @param salary
      * @param department
      * @return {Promise<Employee | null>}
      */
-    async create(name: string, department: Department): Promise<Employee> {
+    async create(name: string, salary: number, department: Department): Promise<any> {
+
         const [result] = await pool.query(
-            'INSERT INTO employees (name, department_id) VALUES (?, ?)',
-            [name, department.id]
+            'INSERT INTO employees (name, department_id, salary) VALUES (?, ?, ?)',
+            [name, department.id, salary]
         );
+
         const insertId = (result as any).insertId;
-        return {id: insertId, name, department};
+
+        return {id: insertId, name, department, salary};
     }
 
 
@@ -73,12 +83,13 @@ export class EmployeeRepository {
      * Atualiza um funcionário pelo ‘ID’
      * @param id
      * @param name
-     * @param departmentId
+     * @param salary
+     * @param department
      */
-    async update(id: number, name: string, department: Department): Promise<boolean> {
+    async update(id: number, name: string, salary: number, department: Department): Promise<boolean> {
         const [result] = await pool.query(
-            'UPDATE employees SET name = ?, department_id = ? WHERE id = ?',
-            [name, department.id, id]
+            'UPDATE employees SET name = ?, salary = ?, department_id = ? WHERE id = ?',
+            [name, salary, department.id, id]
         );
         return (result as any).affectedRows > 0;
     }

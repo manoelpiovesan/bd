@@ -6,7 +6,9 @@ import {Department} from "./department";
 export interface Employee {
     id: number;
     name: string;
-    //departmentId: number;
+    admissionDate: Date;
+    dismissalDate?: Date;
+    salary: number;
     department: Department
 }
 

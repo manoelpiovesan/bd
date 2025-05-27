@@ -26,11 +26,15 @@ export async function setupDatabase(): Promise<void> {
 
     // Criando a tabela de funcionários se não existir
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS employees (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            department_id INT,
-            FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+        CREATE TABLE IF NOT EXISTS employees
+        (
+            id             INT AUTO_INCREMENT PRIMARY KEY,
+            name           VARCHAR(255) NOT NULL,
+            department_id  INT,
+            admission_date DATETIME DEFAULT NOW(),
+            dismissal_date DATETIME,
+            salary         INT,
+            FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL
         )
     `);
 

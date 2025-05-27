@@ -23,13 +23,13 @@ export class EmployeeController {
     }
 
     @Post('/')
-    async create(@Body() body: { name: string, department: Department }) {
-        return this.employeeRepository.create(body.name, body.department);
+    async create(@Body() body: { name: string, department: Department, salary: number }) {
+        return this.employeeRepository.create(body.name, body.salary, body.department);
     }
 
     @Put('/:id')
-    async update(@Param('id') id: number, @Body() body: { name: string, department: Department }) {
-        return this.employeeRepository.update(id, body.name, body.department);
+    async update(@Param('id') id: number, @Body() body: { name: string, salary: number, department: Department }) {
+        return this.employeeRepository.update(id, body.name, body.salary, body.department);
     }
 
     @Delete('/:id')

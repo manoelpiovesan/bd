@@ -10,19 +10,20 @@ export class DashboardRepository {
      */
     async getStatistics(): Promise<any> {
         const [rows]: any = await pool.query(`
-            SELECT 
-                (SELECT COUNT(*) FROM employees) AS total_employees,
-                (SELECT COUNT(*) FROM departments) AS total_departments,
-                (SELECT COUNT(*) FROM employees WHERE department_id IS NULL) AS unassigned_employees
+            SELECT (SELECT COUNT(*) FROM employees)                             AS total_employees,
+                   (SELECT COUNT(*) FROM departments)                           AS total_departments,
+                   (SELECT COUNT(*) FROM employees WHERE department_id IS NULL) AS unassigned_employees
         `);
 
         let stats = Array.isArray(rows) && rows.length > 0 ? rows[0] : rows;
 
         const employeesByDepartment = await this.getEmployeesByDepartment();
+        const averageSalaryByDepartment = await this.getAverageSalaryByDepartment();
 
         return {
             ...stats,
-            employeesByDepartment
+            employeesByDepartment,
+            averageSalaryByDepartment
         };
     }
 
@@ -32,12 +33,11 @@ export class DashboardRepository {
      */
     async getEmployeesByDepartment(): Promise<any[]> {
         const [rows]: any = await pool.query(`
-            SELECT 
-                d.id AS department_id, 
-                d.name AS department_name, 
-                COUNT(e.id) AS employee_count
+            SELECT d.id        AS department_id,
+                   d.name      AS department_name,
+                   COUNT(e.id) AS employee_count
             FROM departments d
-            LEFT JOIN employees e ON d.id = e.department_id
+                     LEFT JOIN employees e ON d.id = e.department_id
             GROUP BY d.id
             ORDER BY COUNT(e.id) ASC
         `);
@@ -53,5 +53,31 @@ export class DashboardRepository {
         return [];
     }
 
-    
+    /**
+     * Obtém a média salarial dos funcionários por departamento
+     * @return {Promise<any[]>} - Lista de departamentos com média salarial
+     */
+    async getAverageSalaryByDepartment(): Promise<any[]> {
+        const [rows]: any = await pool.query(`
+            SELECT d.id          AS department_id,
+                   d.name        AS department_name,
+                   AVG(e.salary) AS average_salary
+            FROM departments d
+                     INNER JOIN employees e ON d.id = e.department_id
+            GROUP BY d.id
+            ORDER BY AVG(e.salary) DESC
+        `);
+
+        if (Array.isArray(rows)) {
+            return rows.map(row => ({
+                id: row.department_id,
+                name: row.department_name,
+                average_salary: row.average_salary
+            }));
+        }
+
+        return [];
+    }
+
+
 }
