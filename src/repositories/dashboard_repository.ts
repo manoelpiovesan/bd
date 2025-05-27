@@ -4,14 +4,6 @@ import {Department} from "../models/department";
 
 @Service()
 export class DashboardRepository {
-    // async findAll(term: string): Promise<Department[]> {
-    //     const query = term
-    //         ? 'SELECT * FROM departments WHERE name LIKE ? ORDER BY name ASC'
-    //         : 'SELECT * FROM departments ORDER BY name ASC';
-    //     const params = term ? [`%${term}%`] : [];
-    //     const [rows] = await pool.query(query, params);
-    //     return rows as Department[];
-    // }
 
     /**
      * Obtém estatísticas do dashboard
