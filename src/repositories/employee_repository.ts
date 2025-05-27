@@ -3,7 +3,9 @@ import {pool} from '../db/connection';
 import {Employee} from "../models/employee";
 import {Department} from "../models/department";
 
-
+/**
+ * Repositório de funcionários
+ */
 @Service()
 export class EmployeeRepository {
 
