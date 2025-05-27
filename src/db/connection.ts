@@ -15,13 +15,26 @@ export const pool = mysql.createPool({
  * @returns {Promise<void>}
  */
 export async function setupDatabase(): Promise<void> {
+
+    // Criando a tabela de departamentos se não existir
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS departments (
+           id INT AUTO_INCREMENT PRIMARY KEY,
+           name VARCHAR(255) NOT NULL
+        )
+    `);
+
     // Criando a tabela de funcionários se não existir
     await pool.query(`
         CREATE TABLE IF NOT EXISTS employees (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
+            name VARCHAR(255) NOT NULL,
+            department_id INT,
+            FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
         )
     `);
+
+
 
     console.log('Database setup complete');
 }

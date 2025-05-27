@@ -13,9 +13,9 @@ export function setupSwagger(app: Application): void {
         {},
         {
             info: {
-                title: 'API Documentation',
+                title: 'Projeto de Sistemas de Banco de Dados',
                 version: '1.0.0',
-                description: 'Documentação da API usando Swagger',
+                description: 'Trabalho Final da disciplina de Sistemas de Banco de Dados da UERJ em 2025.1',
             },
         }
     );

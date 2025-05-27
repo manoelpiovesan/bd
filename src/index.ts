@@ -4,6 +4,7 @@ import {Container} from 'typedi';
 import {EmployeeController} from './controllers/employee_controller';
 import {setupDatabase} from './db/connection';
 import {setupSwagger} from './swagger';
+import {DepartmentController} from "./controllers/department_controller";
 
 const PORT = process.env.PORT || 3000;
 
@@ -17,7 +18,7 @@ async function main(): Promise<void> {
     await setupDatabase();
 
     const app = createExpressServer({
-        controllers: [EmployeeController],
+        controllers: [EmployeeController, DepartmentController],
     });
 
     setupSwagger(app);

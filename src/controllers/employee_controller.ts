@@ -1,35 +1,39 @@
-import {JsonController, Get, Post, Put, Delete, Param, Body} from 'routing-controllers';
+import {JsonController, Get, Post, Put, Delete, Param, Body, QueryParam} from 'routing-controllers';
 import {Service} from 'typedi';
-import {EmployeeService} from '../services/employee_service';
+import {EmployeeRepository} from '../repositories/employee_repository';
+import {Department} from "../models/department";
 
+/**
+ * Controller de funcionários
+ */
 @Service()
 @JsonController('/employees')
 export class EmployeeController {
-    constructor(private readonly employeeService: EmployeeService) {
+    constructor(private readonly employeeRepository: EmployeeRepository) {
     }
 
     @Get('/')
-    async getAll() {
-        return this.employeeService.getAll();
+    async getAll(@QueryParam('term') term: string) {
+        return this.employeeRepository.findAll(term);
     }
 
     @Get('/:id')
     async getById(@Param('id') id: number) {
-        return this.employeeService.getById(id);
+        return this.employeeRepository.findById(id);
     }
 
     @Post('/')
-    async create(@Body() body: { name: string }) {
-        return this.employeeService.create(body.name);
+    async create(@Body() body: { name: string, department: Department }) {
+        return this.employeeRepository.create(body.name, body.department);
     }
 
     @Put('/:id')
-    async update(@Param('id') id: number, @Body() body: { name: string }) {
-        return this.employeeService.update(id, body.name);
+    async update(@Param('id') id: number, @Body() body: { name: string, department: Department }) {
+        return this.employeeRepository.update(id, body.name, body.department);
     }
 
     @Delete('/:id')
     async delete(@Param('id') id: number) {
-        return this.employeeService.delete(id);
+        return this.employeeRepository.delete(id);
     }
 }
