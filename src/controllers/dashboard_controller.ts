@@ -1,4 +1,4 @@
-import {JsonController, Get, Post, Put, Delete, Param, Body, QueryParam} from 'routing-controllers';
+import {JsonController, Get} from 'routing-controllers';
 import {Service} from 'typedi';
 import {DashboardRepository} from "../repositories/dashboard_repository";
 

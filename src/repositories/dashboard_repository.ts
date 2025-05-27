@@ -1,6 +1,5 @@
 import {Service} from 'typedi';
 import {pool} from '../db/connection';
-import {Department} from "../models/department";
 
 @Service()
 export class DashboardRepository {
@@ -40,7 +39,7 @@ export class DashboardRepository {
             FROM departments d
             LEFT JOIN employees e ON d.id = e.department_id
             GROUP BY d.id
-            ORDER BY d.name ASC
+            ORDER BY COUNT(e.id) ASC
         `);
 
         if (Array.isArray(rows)) {
