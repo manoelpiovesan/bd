@@ -39,7 +39,7 @@ export class DashboardRepository {
             FROM departments d
                      LEFT JOIN employees e ON d.id = e.department_id
             GROUP BY d.id
-            ORDER BY COUNT(e.id) ASC
+            ORDER BY COUNT(e.id)
         `);
 
         if (Array.isArray(rows)) {
