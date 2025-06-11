@@ -1,6 +1,7 @@
 import {Service} from 'typedi';
 import {pool} from '../db/connection';
 import {Department} from "../models/department";
+import {MyResponse} from "../models/my_response";
 
 /**
  * Repositório de departamentos
@@ -10,15 +11,20 @@ export class DepartmentRepository {
     /**
      * Retorna todos os departamentos
      * @param term - Termo de pesquisa opcional
+     * @param limit
+     * @param offset
      * @return {Promise<Department[]>}
      */
-    async findAll(term: string): Promise<Department[]> {
+    async findAll(term: string, limit: number, offset: number): Promise<MyResponse<Department>> {
         const query = term
-            ? 'SELECT * FROM departments WHERE name LIKE ? ORDER BY name ASC'
-            : 'SELECT * FROM departments ORDER BY name ASC';
-        const params = term ? [`%${term}%`] : [];
+            ? 'SELECT * FROM departments WHERE name LIKE ? ORDER BY name LIMIT ? OFFSET ?'
+            : 'SELECT * FROM departments ORDER BY name LIMIT ? OFFSET ?';
+        const params = term ? [`%${term}%`, limit, offset] : [limit, offset];
         const [rows] = await pool.query(query, params);
-        return rows as Department[];
+        return {
+            data: rows as Department[],
+            queries: [pool.format(query, params)]
+        };
     }
 
     /**
@@ -26,10 +32,14 @@ export class DepartmentRepository {
      * @param id - ID do departamento
      * @return {Promise<Department | null>}
      */
-    async findById(id: number): Promise<Department | null> {
+    async findById(id: number): Promise<MyResponse<Department> | null> {
         const [rows] = await pool.query('SELECT * FROM departments WHERE id = ?', [id]);
         const departments = rows as Department[];
-        return departments.length ? departments[0] : null;
+        const first = departments[0];
+        return {
+            data: [first],
+            queries: [pool.format('SELECT * FROM departments WHERE id = ?', [id])]
+        };
     }
 
     /**
@@ -37,10 +47,14 @@ export class DepartmentRepository {
      * @param name - Nome do departamento
      * @return {Promise<Department>}
      */
-    async create(name: string): Promise<Department> {
-        const [result] = await pool.query('INSERT INTO departments (name) VALUES (?)', [name]);
+    async create(name: string): Promise<MyResponse<Department>> {
+        const query: string = 'INSERT INTO departments (name) VALUES (?)';
+        const [result] = await pool.query(query, [name]);
         const insertId = (result as any).insertId;
-        return {id: insertId, name};
+        return {
+            data: [{id: insertId, name}],
+            queries: [pool.format(query, [name])]
+        };
     }
 
     /**
@@ -48,9 +62,13 @@ export class DepartmentRepository {
      * @param id
      * @param name
      */
-    async update(id: number, name: string): Promise<boolean> {
-        const [result] = await pool.query('UPDATE departments SET name = ? WHERE id = ?', [name, id]);
-        return (result as any).affectedRows > 0;
+    async update(id: number, name: string): Promise<MyResponse<boolean>> {
+        const query: string = 'UPDATE departments SET name = ? WHERE id = ?';
+        const [result] = await pool.query(query, [name, id]);
+        return {
+            data: [(result as any).affectedRows > 0],
+            queries: [pool.format(query, [name, id])]
+        }
     }
 
     /**
@@ -58,8 +76,12 @@ export class DepartmentRepository {
      * @param id - ID do departamento
      * @return {Promise<boolean>} - Retorna true se o departamento foi deletado, false caso contrário
      */
-    async delete(id: number): Promise<boolean> {
-        const [result] = await pool.query('DELETE FROM departments WHERE id = ?', [id]);
-        return (result as any).affectedRows > 0;
+    async delete(id: number): Promise<MyResponse<boolean>> {
+        const query: string = 'DELETE FROM departments WHERE id = ?';
+        const [result] = await pool.query(query, [id]);
+        return {
+            data: [(result as any).affectedRows > 0],
+            queries: [pool.format(query, [id])]
+        };
     }
 }

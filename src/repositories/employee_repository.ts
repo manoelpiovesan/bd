@@ -1,7 +1,8 @@
 import {Service} from 'typedi';
 import {pool} from '../db/connection';
-import {Employee} from "../models/employee";
 import {Department} from "../models/department";
+import {MyResponse} from "../models/my_response";
+import mysql from "mysql2/promise";
 
 /**
  * Repositório de funcionários
@@ -13,25 +14,28 @@ export class EmployeeRepository {
      * Retorna todos os funcionários
      * @return {Promise<Employee[]>}'
      */
-    async findAll(term: string): Promise<any[]> {
+    async findAll(term: string, limit: number, offset: number): Promise<MyResponse<any>> {
         const query = term
-            ? 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id  WHERE e.name LIKE ? ORDER BY e.name ASC'
-            : 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id ORDER BY e.name ASC';
+            ? 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id WHERE e.name LIKE ? ORDER BY e.name ASC LIMIT ? OFFSET ?'
+            : 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id ORDER BY e.name ASC LIMIT ? OFFSET ?';
 
-        const params = term ? [`%${term}%`] : [];
+        const params = term ? [`%${term}%`, limit, offset] : [limit, offset];
         const [rows] = await pool.query(query, params);
 
-        return (rows as any[]).map(row => ({
-            id: row.employee_id,
-            name: row.employee_name,
-            salary: row.employee_salary,
-            admissionDate: row.admission_date,
-            dismissalDate: row.dismissal_date,
-            department: row.department_id ? {
-                id: row.department_id,
-                name: row.department_name
-            } : null
-        }));
+        return {
+            data: (rows as any[]).map(row => ({
+                id: row.employee_id,
+                name: row.employee_name,
+                salary: row.employee_salary,
+                admissionDate: row.admission_date,
+                dismissalDate: row.dismissal_date,
+                department: row.department_id ? {
+                    id: row.department_id,
+                    name: row.department_name
+                } : null
+            })),
+            queries: [mysql.format(query, params)]
+        }
     }
 
     /**
@@ -39,9 +43,12 @@ export class EmployeeRepository {
      * @param id - Employee ID
      * @return {Promise<Employee | null>}
      */
-    async findById(id: number): Promise<any | null> {
+    async findById(id: number): Promise<MyResponse<any> | null> {
+
+        const query: string = 'SELECT e.id as employee_id, e.name as employee_name, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id WHERE e.id = ?'
+
         const [rows] = await pool.query(
-            'SELECT e.id as employee_id, e.name as employee_name, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id WHERE e.id = ?',
+            query,
             [id]
         );
 
@@ -49,13 +56,16 @@ export class EmployeeRepository {
         if (!row) return null;
 
         return {
-            id: row.employee_id,
-            name: row.employee_name,
-            department: row.department_id ? {
-                id: row.department_id,
-                name: row.department_name
-            } : null
-        };
+            data: [{
+                id: row.employee_id,
+                name: row.employee_name,
+                department: row.department_id ? {
+                    id: row.department_id,
+                    name: row.department_name
+                } : null
+            }],
+            queries: [mysql.format(query, [id])]
+        }
     }
 
 
@@ -66,16 +76,19 @@ export class EmployeeRepository {
      * @param department
      * @return {Promise<Employee | null>}
      */
-    async create(name: string, salary: number, department: Department): Promise<any> {
-
+    async create(name: string, salary: number, department: Department): Promise<MyResponse<any>> {
+        const query: string = 'INSERT INTO employees (name, department_id, salary) VALUES (?, ?, ?)';
         const [result] = await pool.query(
-            'INSERT INTO employees (name, department_id, salary) VALUES (?, ?, ?)',
+            query,
             [name, department.id, salary]
         );
 
         const insertId = (result as any).insertId;
 
-        return {id: insertId, name, department, salary};
+        return {
+            data: [{id: insertId, name, department, salary}],
+            queries: [mysql.format(query, [name, department.id, salary])]
+        };
     }
 
 
@@ -86,12 +99,16 @@ export class EmployeeRepository {
      * @param salary
      * @param department
      */
-    async update(id: number, name: string, salary: number, department: Department): Promise<boolean> {
+    async update(id: number, name: string, salary: number, department: Department): Promise<MyResponse<boolean>> {
+        const query: string = 'UPDATE employees SET name = ?, salary = ?, department_id = ? WHERE id = ?';
         const [result] = await pool.query(
-            'UPDATE employees SET name = ?, salary = ?, department_id = ? WHERE id = ?',
+            query,
             [name, salary, department.id, id]
         );
-        return (result as any).affectedRows > 0;
+        return {
+            data: [(result as any).affectedRows > 0],
+            queries: [mysql.format(query, [name, salary, department.id, id])]
+        };
     }
 
     /**
@@ -99,8 +116,11 @@ export class EmployeeRepository {
      * @param id - Employee ID
      * @return {Promise<boolean>}
      */
-    async delete(id: number): Promise<boolean> {
+    async delete(id: number): Promise<MyResponse<boolean>> {
         const [result] = await pool.query('DELETE FROM employees WHERE id = ?', [id]);
-        return (result as any).affectedRows > 0;
+        return {
+            data: [(result as any).affectedRows > 0],
+            queries: [mysql.format('DELETE FROM employees WHERE id = ?', [id])]
+        };
     }
 }

@@ -17,7 +17,4 @@ export class DashboardController {
         return this.dashboardRepository.getStatistics();
     }
 
-
-
-
 }
