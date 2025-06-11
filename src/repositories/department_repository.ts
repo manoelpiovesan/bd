@@ -17,8 +17,15 @@ export class DepartmentRepository {
      */
     async findAll(term: string, limit: number, offset: number): Promise<MyResponse<Department>> {
         const query = term
-            ? 'SELECT * FROM departments WHERE name LIKE ? ORDER BY name LIMIT ? OFFSET ?'
-            : 'SELECT * FROM departments ORDER BY name LIMIT ? OFFSET ?';
+            ? `SELECT *
+               FROM departments
+               WHERE name LIKE ?
+               ORDER BY name
+               LIMIT ? OFFSET ?`
+            : `SELECT *
+               FROM departments
+               ORDER BY name
+               LIMIT ? OFFSET ?`;
         const params = term ? [`%${term}%`, limit, offset] : [limit, offset];
         const [rows] = await pool.query(query, params);
         return {
@@ -33,12 +40,16 @@ export class DepartmentRepository {
      * @return {Promise<Department | null>}
      */
     async findById(id: number): Promise<MyResponse<Department> | null> {
-        const [rows] = await pool.query('SELECT * FROM departments WHERE id = ?', [id]);
+        const [rows] = await pool.query(`SELECT *
+                                         FROM departments
+                                         WHERE id = ?`, [id]);
         const departments = rows as Department[];
         const first = departments[0];
         return {
             data: [first],
-            queries: [pool.format('SELECT * FROM departments WHERE id = ?', [id])]
+            queries: [pool.format(`SELECT *
+                                   FROM departments
+                                   WHERE id = ?`, [id])]
         };
     }
 

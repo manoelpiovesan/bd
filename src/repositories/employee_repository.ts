@@ -15,9 +15,36 @@ export class EmployeeRepository {
      * @return {Promise<Employee[]>}'
      */
     async findAll(term: string, limit: number, offset: number): Promise<MyResponse<any>> {
+
+        const termQuery = `SELECT e.id             as employee_id,
+                                  e.name           as employee_name,
+                                  e.salary         as employee_salary,
+                                  e.admission_date as admission_date,
+                                  e.dismissal_date as dismissal_date,
+                                  d.id             as department_id,
+                                  d.name           as department_name
+                           FROM employees e
+                                    LEFT JOIN departments d
+                                              ON e.department_id = d.id
+                           WHERE e.name LIKE ?
+                           ORDER BY e.name ASC LIMIT ?
+                           OFFSET ?`;
+        const rawQuery = `SELECT e.id             as employee_id,
+                                 e.name           as employee_name,
+                                 e.salary         as employee_salary,
+                                 e.admission_date as admission_date,
+                                 e.dismissal_date as dismissal_date,
+                                 d.id             as department_id,
+                                 d.name           as department_name
+                          FROM employees e
+                                   LEFT JOIN departments d
+                                             ON e.department_id = d.id
+                          ORDER BY e.name ASC LIMIT ?
+                          OFFSET ?`;
+
         const query = term
-            ? 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id WHERE e.name LIKE ? ORDER BY e.name ASC LIMIT ? OFFSET ?'
-            : 'SELECT e.id as employee_id, e.name as employee_name, e.salary as employee_salary, e.admission_date as admission_date, e.dismissal_date as dismissal_date, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id ORDER BY e.name ASC LIMIT ? OFFSET ?';
+            ? termQuery
+            : rawQuery;
 
         const params = term ? [`%${term}%`, limit, offset] : [limit, offset];
         const [rows] = await pool.query(query, params);
@@ -45,7 +72,13 @@ export class EmployeeRepository {
      */
     async findById(id: number): Promise<MyResponse<any> | null> {
 
-        const query: string = 'SELECT e.id as employee_id, e.name as employee_name, d.id as department_id, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id WHERE e.id = ?'
+        const query: string = `SELECT e.id   as employee_id,
+                                      e.name as employee_name,
+                                      d.id   as department_id,
+                                      d.name as department_name
+                               FROM employees e
+                                        LEFT JOIN departments d ON e.department_id = d.id
+                               WHERE e.id = ?`
 
         const [rows] = await pool.query(
             query,
@@ -77,7 +110,8 @@ export class EmployeeRepository {
      * @return {Promise<Employee | null>}
      */
     async create(name: string, salary: number, department: Department): Promise<MyResponse<any>> {
-        const query: string = 'INSERT INTO employees (name, department_id, salary) VALUES (?, ?, ?)';
+        const query: string = `INSERT INTO employees (name, department_id, salary)
+                               VALUES (?, ?, ?)`;
         const [result] = await pool.query(
             query,
             [name, department.id, salary]
@@ -100,7 +134,11 @@ export class EmployeeRepository {
      * @param department
      */
     async update(id: number, name: string, salary: number, department: Department): Promise<MyResponse<boolean>> {
-        const query: string = 'UPDATE employees SET name = ?, salary = ?, department_id = ? WHERE id = ?';
+        const query: string = `UPDATE employees
+                               SET name          = ?,
+                                   salary        = ?,
+                                   department_id = ?
+                               WHERE id = ?`;
         const [result] = await pool.query(
             query,
             [name, salary, department.id, id]
@@ -117,10 +155,12 @@ export class EmployeeRepository {
      * @return {Promise<boolean>}
      */
     async delete(id: number): Promise<MyResponse<boolean>> {
-        const [result] = await pool.query('DELETE FROM employees WHERE id = ?', [id]);
+        const [result] = await pool.query(`DELETE FROM employees WHERE id = ?`, [id]);
         return {
             data: [(result as any).affectedRows > 0],
-            queries: [mysql.format('DELETE FROM employees WHERE id = ?', [id])]
+            queries: [mysql.format(`DELETE
+                                    FROM employees
+                                    WHERE id = ?`, [id])]
         };
     }
 }
