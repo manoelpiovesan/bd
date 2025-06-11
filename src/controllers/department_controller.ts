@@ -12,8 +12,8 @@ export class DepartmentController {
     }
 
     @Get('/')
-    async getAll(@QueryParam('term') term: string, @QueryParam('limit') limit: number = 10, @QueryParam('offset') offset: number = 0) {
-        return this.departmentRepository.findAll(term, limit, offset);
+    async getAll(@QueryParam('term') term: string) {
+        return this.departmentRepository.findAll(term);
     }
 
     @Get('/:id')

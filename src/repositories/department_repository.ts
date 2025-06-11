@@ -11,22 +11,18 @@ export class DepartmentRepository {
     /**
      * Retorna todos os departamentos
      * @param term - Termo de pesquisa opcional
-     * @param limit
-     * @param offset
      * @return {Promise<Department[]>}
      */
-    async findAll(term: string, limit: number, offset: number): Promise<MyResponse<Department>> {
+    async findAll(term: string): Promise<MyResponse<Department>> {
         const query = term
             ? `SELECT *
                FROM departments
                WHERE name LIKE ?
-               ORDER BY name
-               LIMIT ? OFFSET ?`
+               ORDER BY name`
             : `SELECT *
                FROM departments
-               ORDER BY name
-               LIMIT ? OFFSET ?`;
-        const params = term ? [`%${term}%`, limit, offset] : [limit, offset];
+               ORDER BY name`;
+        const params = term ? [`%${term}%`] : [];
         const [rows] = await pool.query(query, params);
         return {
             data: rows as Department[],
