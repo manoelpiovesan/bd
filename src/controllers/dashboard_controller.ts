@@ -12,12 +12,19 @@ export class DashboardController {
     constructor(private readonly dashboardRepository: DashboardRepository) {
     }
 
-    @Get('/')
+    @Get('/common-stats')
     async getDashboardData() {
         return this.dashboardRepository.getStatistics();
     }
 
+    @Get('/employees-by-department')
+    async getEmployeesByDepartment() {
+        return this.dashboardRepository.getEmployeesByDepartment();
+    }
 
-
+    @Get('/average-salary-by-department')
+    async getAverageSalaryByDepartment() {
+        return this.dashboardRepository.getAverageSalaryByDepartment();
+    }
 
 }

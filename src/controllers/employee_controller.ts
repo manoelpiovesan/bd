@@ -13,8 +13,8 @@ export class EmployeeController {
     }
 
     @Get('/')
-    async getAll(@QueryParam('term') term: string) {
-        return this.employeeRepository.findAll(term);
+    async getAll(@QueryParam('term') term: string, @QueryParam('limit') limit: number = 10, @QueryParam('offset') offset: number = 0) {
+        return this.employeeRepository.findAll(term, limit, offset);
     }
 
     @Get('/:id')
