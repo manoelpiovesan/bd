@@ -2,6 +2,11 @@ export interface CommonStats {
     totalEmployees: number;
     totalDepartments: number;
     unassignedEmployees: number;
+    averageSalary: number;
+    highestSalary: number;
+    lowestSalary: number;
+    newHiresLast30Days: number;
+    activeDepartments: number;
 }
 
 export interface EmployeesByDepartment {
