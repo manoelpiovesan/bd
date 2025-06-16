@@ -6,6 +6,7 @@ import {setupDatabase} from './db/connection';
 import {setupSwagger} from './swagger';
 import {DepartmentController} from "./controllers/department_controller";
 import {DashboardController} from "./controllers/dashboard_controller";
+import {PlaygroundController} from "./controllers/playground_controller";
 
 const PORT = process.env.PORT || 3000;
 
@@ -19,7 +20,7 @@ async function main(): Promise<void> {
     await setupDatabase();
 
     const app = createExpressServer({
-        controllers: [EmployeeController, DepartmentController, DashboardController],
+        controllers: [EmployeeController, DepartmentController, DashboardController, PlaygroundController],
     });
 
     setupSwagger(app);
