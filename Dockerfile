@@ -1,25 +1,17 @@
-# Etapa 1: build da aplicação
-FROM node:20-alpine AS build
+FROM node:18
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
 COPY package*.json ./
+
 RUN npm install
 
 COPY . .
+
+# Certifique-se de que o TypeScript compile os arquivos para o diretório dist
 RUN npm run build
 
-# Etapa 2: imagem final para produção
-FROM node:20-alpine
-
-WORKDIR /app
-
-COPY --from=build /app/package*.json ./
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/wait-for-it.sh ./wait-for-it.sh
-
-RUN npm install --only=production
-
+# Use o diretório dist como ponto de entrada
 EXPOSE 3000
 
 CMD ["node", "dist/index.js"]

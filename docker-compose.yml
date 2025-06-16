@@ -18,23 +18,23 @@ services:
   ###################
   #  Node.js API    #
   ###################
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: node-api-container
-    ports:
-      - "3000:3000"
-    environment:
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: root
-      DB_NAME: testdb
-    depends_on:
-      - mysql
-    command: ["/bin/sh", "-c", "chmod +x ./wait-for-it.sh && ./wait-for-it.sh mysql:3306 -- npm start"]
-    # volumes:
-    #   - .:/usr/src/app
+#  api:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: node-api-container
+#    ports:
+#      - "3000:3000"
+#    environment:
+#      DB_HOST: mysql
+#      DB_USER: root
+#      DB_PASSWORD: root
+#      DB_NAME: testdb
+#    depends_on:
+#      - mysql
+#    volumes:
+#      - .:/usr/src/app
 
 volumes:
   mysql-data:
+
