@@ -121,17 +121,19 @@ export class EmployeeRepository {
   async create(
     name: string,
     salary: number,
-    department: Department,
+    department: Department | null,
     admissionDate?: string | Date,
     dismissalDate?: string | Date
   ): Promise<MyResponse<any>> {
     const query: string = `INSERT INTO employees (name, salary, department_id, admission_date, dismissal_date)
                                VALUES (?, ?, ?, ?, ?)`;
 
+    const departmentId = department ? department.id : null;
+
     const [result] = await pool.query(query, [
       name,
       salary,
-      department.id,
+      departmentId,
       admissionDate || null,
       dismissalDate || null,
     ]);
@@ -153,7 +155,7 @@ export class EmployeeRepository {
         mysql.format(query, [
           name,
           salary,
-          department.id,
+          departmentId,
           admissionDate || null,
           dismissalDate || null,
         ]),
@@ -174,7 +176,7 @@ export class EmployeeRepository {
     id: number,
     name: string,
     salary: number,
-    department: Department,
+    department: Department | null,
     admissionDate?: string | Date,
     dismissalDate?: string | Date
   ): Promise<MyResponse<boolean>> {
@@ -185,10 +187,12 @@ export class EmployeeRepository {
                                    admission_date = ?,
                                    dismissal_date = ?
                                WHERE id = ?`;
+    const departmentId = department ? department.id : null;
+
     const [result] = await pool.query(query, [
       name,
       salary,
-      department.id,
+      departmentId,
       admissionDate || null,
       dismissalDate || null,
       id,
@@ -199,7 +203,7 @@ export class EmployeeRepository {
         mysql.format(query, [
           name,
           salary,
-          department.id,
+          departmentId,
           admissionDate || null,
           dismissalDate || null,
           id,

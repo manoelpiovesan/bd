@@ -39,7 +39,7 @@ export class EmployeeController {
     @Body()
     body: {
       name: string;
-      department: Department;
+      department: Department | null;
       salary: number;
       admissionDate?: string;
       dismissalDate?: string;
@@ -61,7 +61,7 @@ export class EmployeeController {
     body: {
       name: string;
       salary: number;
-      department: Department;
+      department: Department | null;
       admissionDate?: string;
       dismissalDate?: string;
     }
